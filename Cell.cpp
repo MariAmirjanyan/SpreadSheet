@@ -20,11 +20,6 @@ Cell::Cell(const Cell& rhv)
     :val(rhv.val)
 {}
 
-// Cell::Cell(Cell&& rhv) 
-//     :val(rhv.val)
-// {
-//     rhv.val = "";
-// }
 Cell::Cell(Cell&& rhv) 
     :val(std::move(rhv.val))
 {
@@ -71,13 +66,6 @@ const Cell& Cell::operator=(const Cell& rhv){
     return *this;
 }
 
-// const Cell& Cell::operator=(Cell&& rhv){
-//     if (this != &rhv) {
-//         val = rhv.val;
-//         rhv.val = "";
-//     }
-//     return *this;
-// }
 const Cell& Cell::operator=(Cell&& rhv){
     if (this != &rhv) {
         val = std::move(rhv.val);
