@@ -21,7 +21,7 @@ Cell::Cell(const Cell& rhv)
 {}
 
 Cell::Cell(Cell&& rhv) 
-    :val(std::move(rhv.val))
+    :val(rhv.val)
 {
     rhv.val = "";
 }
@@ -43,7 +43,7 @@ Cell::Cell(bool val)
 {}
 
 Cell::Cell(std::string val) 
-    :val(val)
+    :val(std::move(val))
 {}
 
 
@@ -68,7 +68,7 @@ const Cell& Cell::operator=(const Cell& rhv){
 
 const Cell& Cell::operator=(Cell&& rhv){
     if (this != &rhv) {
-        val = std::move(rhv.val);
+        val = rhv.val;
         rhv.val = "";
     }
     return *this;
@@ -115,21 +115,25 @@ const Cell& Cell::operator=(const std::vector<int>& rhv){
 Cell::operator int(){
     try {
         return std::stoi(val);
-    } catch (const std::invalid_argument&) {
-        throw std::invalid_argument("Conversion to int failed: " + val);
+    } catch (...) {
+        return 0;
     }
 }
 
 Cell::operator double(){
     try {
         return std::stod(val);
-    } catch (const std::invalid_argument&) {
-        throw std::invalid_argument("Conversion to double failed: " + val);
+    } catch (...) {
+        return 0.0;
     }
 }
 
 Cell::operator char(){
-    return val[0];
+    if (!val.empty()) {
+        return val[0];
+    } else {
+        return '\0';
+    }
 }
 
 Cell::operator bool(){
@@ -140,12 +144,12 @@ Cell::operator std::string(){
     return val;
 }
 
-Cell::operator std::vector<int>(){
+Cell::operator std::vector<int>() {
     std::vector<int> result;
     std::string temp;
     temp.reserve(val.size());
     for (char ch : val) {
-        if (ch == ',' || ch == ' ') {
+        if (ch == ',' || std::isspace(ch)) { 
             if (!temp.empty()) {
                 result.push_back(std::stoi(temp));
                 temp.clear();
@@ -158,7 +162,7 @@ Cell::operator std::vector<int>(){
         result.push_back(std::stoi(temp));
     }
     return result;
-} 
+}
 
 bool operator==(const Cell& lhv, const Cell& rhv) {
     return lhv.getVal() == rhv.getVal();
@@ -180,32 +184,6 @@ std::istream& operator>>(std::istream& in, Cell& ob) {
 }
 
 std::ostream& operator<<(std::ostream& out, const Cell& ob) {
-    const std::string& val = ob.getVal();
-    bool isString = false;
-    bool isCharArray = false;
-    bool isArray = false;
-
-    for (char ch : val) {
-        if (std::isspace(ch)) {
-            isArray = true;
-        } else if (ch == '"' && val.back() == '"') {
-            isString = true;
-        } else if (ch == '\'' && val.size() == 3 && val[1] != '\'') {
-            isCharArray = true;
-        } else {
-            isArray = true;
-        }
-    }
-
-    if (isString) {
-        out << '"' << val << '"';
-    } else if (isCharArray) {
-        out << '\'' << val[1] << '\'';
-    } else if (isArray) {
-        out << "{" << val << "}";
-    } else {
-        out << val;
-    }
-
+    out << ob.getVal();
     return out;
 }

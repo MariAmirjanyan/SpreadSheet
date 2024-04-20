@@ -119,20 +119,34 @@ void SpreadSheet::mirrorV(){
     }
 }
 
-void SpreadSheet::mirrorD(){
-    for (size_t i = 0; i < rowcnt; ++i) {
-        for (size_t j = i + 1; j < colcnt; ++j) {
-            std::swap(board[i][j], board[j][i]);
+void SpreadSheet::mirrorD() {
+    if (rowcnt == colcnt) {
+        for (size_t i = 0; i < rowcnt; ++i) {
+            for (size_t j = i + 1; j < colcnt; ++j) {
+                std::swap(board[i][j], board[j][i]);
+            }
         }
+    } else {
+        size_t new_rowcnt = colcnt;
+        size_t new_colcnt = rowcnt;
+        Cell** new_board = new Cell*[new_rowcnt];
+        for (size_t i = 0; i < new_rowcnt; ++i) {
+            new_board[i] = new Cell[new_colcnt];
+            for (size_t j = 0; j < new_colcnt; ++j) {
+                new_board[i][j] = board[j][i];
+            }
+        }
+        clear();
+        rowcnt = new_rowcnt;
+        colcnt = new_colcnt;
+        board = new_board;
     }
 }
 
 void SpreadSheet::mirrorSD(){
-    for (size_t i = 0; i < rowcnt; ++i) {
-        for (size_t j = 0; j < colcnt - i - 1; ++j) {
-            std::swap(board[i][j], board[rowcnt - j - 1][colcnt - i - 1]);
-        }
-    }
+    mirrorD();
+    mirrorV();
+    mirrorH();
 }
 
 void SpreadSheet::rotate(int cnt){
@@ -290,13 +304,11 @@ std::string SpreadSheet::getVal(size_t row, size_t col) const {
 
 std::ostream& operator<<(std::ostream& os, const SpreadSheet& sheet) {
     constexpr int cellWidth = 10; 
-
     for (size_t i = 0; i < sheet.row(); ++i) {
         for (size_t j = 0; j < sheet.col(); ++j) {
             os << std::setw(cellWidth) << sheet.getVal(i, j) << ' ';
         }
         os << '\n';
     }
-
     return os;
 }
